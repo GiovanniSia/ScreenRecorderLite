@@ -1,5 +1,9 @@
-import React, { useState, useRef } from 'react';
-import './App.css';
+import React, { useState, useRef } from "react";
+import "./App.css";
+import ButtonRecorder from "./components/buttonRecorder/ButtonRecorder";
+import FileNameInput from "./components/fileNameInput/FileNameInput";
+import Countdown from "./components/countDown/CountDown";
+import VideoPlayer from "./components/videoPlayer/VideoPlayer";
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -7,7 +11,7 @@ function App() {
   const [countdown, setCountdown] = useState(3);
   const videoRef = useRef();
   const mediaRecorderRef = useRef(null);
-  const [fileName, setFileName] = useState('captura');
+  const [fileName, setFileName] = useState("captura");
 
   const handleRecording = async () => {
     try {
@@ -28,22 +32,21 @@ function App() {
       // Retraso de 3 segundos antes de iniciar la grabación
       setCountdown(3);
       const countdownInterval = setInterval(() => {
-        setCountdown(prevCountdown => prevCountdown - 1);
+        setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
 
       setTimeout(() => {
         clearInterval(countdownInterval); // funcion js que limpia el temporizador
         startRecording(media);
       }, 3000); // 3 segundos de retraso
-
     } catch (error) {
-      alert('Error al obtener la captura de pantalla:', error);
+      alert("Error al obtener la captura de pantalla:", error);
     }
   };
 
   const startRecording = (media) => {
     const mediarecorder = new MediaRecorder(media, {
-      mimeType: 'video/webm;codecs=h264,opus',
+      mimeType: "video/webm;codecs=h264,opus",
       bitsPerSecond: 5000000,
     });
 
@@ -52,14 +55,14 @@ function App() {
 
     // cuando se finaliza el compartir pantalla se detiene la grabación
     const [video] = media.getVideoTracks();
-    video.addEventListener('ended', () => {
+    video.addEventListener("ended", () => {
       stopRecording();
     });
 
     // al finalizar guarda la grabación
-    mediarecorder.addEventListener('dataavailable', (e) => {
-      const link = document.createElement('a');
-      const blob = new Blob([e.data], { type: 'video/webm' });
+    mediarecorder.addEventListener("dataavailable", (e) => {
+      const link = document.createElement("a");
+      const blob = new Blob([e.data], { type: "video/webm" });
       link.href = URL.createObjectURL(blob);
       link.download = fileName;
       link.click();
@@ -72,13 +75,15 @@ function App() {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-
+      setIsRecordingCountDown(false);
+      
       const stream = videoRef.current.srcObject;
       const tracks = stream.getTracks();
 
-      tracks.forEach(track => track.stop());
+      tracks.forEach((track) => track.stop());
 
       videoRef.current.srcObject = null;
+
     }
   };
 
@@ -86,19 +91,24 @@ function App() {
     <>
       <div className="card">
         <h1>Screen Lite</h1>
-        <input
-          type="text"
-          value={fileName}
-          onChange={(e) => setFileName(e.target.value)}
-          placeholder="Nombre del archivo"
-          className={isRecording ? 'invalid' : ''}
-          disabled={isRecording ? true : false}
+
+        <FileNameInput
+          fileName={fileName}
+          setFileName={setFileName}
+          isRecording={isRecording}
         />
-        <button className='button' onClick={isRecording ? stopRecording : handleRecording}>
-          {isRecording ? '⏹️ Stop Recording' : '⏺️ Start Recording'}
-        </button>
-        <div className="countdown" style={{display:isRecordingCountDown? '':'none'}}>{countdown > 0 && `${countdown}`}</div>
-        <video className="video" ref={videoRef} autoPlay muted style={{ display: isRecording ? '' : 'none' }} />
+
+        <ButtonRecorder
+          isRecording={isRecording}
+          stopRecording={stopRecording}
+          handleRecording={handleRecording}
+        />
+
+        <Countdown
+          countdown={countdown}
+          isRecordingCountDown={isRecordingCountDown}
+        />
+        <VideoPlayer isRecording={isRecording} videoRef={videoRef} />
       </div>
     </>
   );

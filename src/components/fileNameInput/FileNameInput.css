@@ -1,0 +1,14 @@
+.fileNameInput {
+    width: 100%;
+    padding: 20px;
+    margin: 20px 0;
+    box-sizing: border-box;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 20px;
+  }
+
+  .invalid {
+    background-color: #e5e2e2; /* Puedes ajustar el color gris según tus preferencias */
+  }
+  
