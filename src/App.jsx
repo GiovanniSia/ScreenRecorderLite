@@ -3,6 +3,7 @@ import './App.css';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
+  const [isRecordingCountDown, setIsRecordingCountDown] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const videoRef = useRef();
   const mediaRecorderRef = useRef(null);
@@ -19,9 +20,10 @@ function App() {
         },
       });
 
+      // es para ver el video en la web
       videoRef.current.srcObject = media;
 
-      setIsRecording(true);
+      setIsRecordingCountDown(true);
 
       // Retraso de 3 segundos antes de iniciar la grabación
       setCountdown(3);
@@ -62,6 +64,8 @@ function App() {
       link.download = fileName;
       link.click();
     });
+
+    setIsRecording(true);
   };
 
   const stopRecording = () => {
@@ -93,7 +97,7 @@ function App() {
         <button className='button' onClick={isRecording ? stopRecording : handleRecording}>
           {isRecording ? '⏹️ Stop Recording' : '⏺️ Start Recording'}
         </button>
-        <div className="countdown" style={{display:isRecording? '':'none'}}>{countdown > 0 && `Starting in ${countdown} seconds...`}</div>
+        <div className="countdown" style={{display:isRecordingCountDown? '':'none'}}>{countdown > 0 && `${countdown}`}</div>
         <video className="video" ref={videoRef} autoPlay muted style={{ display: isRecording ? '' : 'none' }} />
       </div>
     </>
