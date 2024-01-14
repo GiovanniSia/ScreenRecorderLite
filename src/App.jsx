@@ -3,9 +3,10 @@ import './App.css';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
+  const [countdown, setCountdown] = useState(3);
   const videoRef = useRef();
   const mediaRecorderRef = useRef(null);
-  const [fileName, setFileName] = useState('captura.mp4');
+  const [fileName, setFileName] = useState('captura');
 
   const handleRecording = async () => {
     try {
@@ -13,38 +14,54 @@ function App() {
         audio: true,
         video: {
           frameRate: { ideal: 30 },
-          width: { ideal: 1920 }, // Ancho deseado
-          height: { ideal: 1080 }, // Altura deseada
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
       });
 
       videoRef.current.srcObject = media;
 
-      const mediarecorder = new MediaRecorder(media, {
-        mimeType: 'video/webm;codecs=h264,opus',
-        bitsPerSecond: 5000000, 
-      });
-
-      mediarecorder.start();
-      mediaRecorderRef.current = mediarecorder;
-
-      const [video] = media.getVideoTracks();
-      video.addEventListener('ended', () => {
-        stopRecording();
-      });
-
-      mediarecorder.addEventListener('dataavailable', (e) => {
-        const link = document.createElement('a');
-        const blob = new Blob([e.data], { type: 'video/webm' });
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName; // Usa el nombre de archivo del estado
-        link.click();
-      });
-
       setIsRecording(true);
+
+      // Retraso de 3 segundos antes de iniciar la grabación
+      setCountdown(3);
+      const countdownInterval = setInterval(() => {
+        setCountdown(prevCountdown => prevCountdown - 1);
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(countdownInterval); // funcion js que limpia el temporizador
+        startRecording(media);
+      }, 3000); // 3 segundos de retraso
+
     } catch (error) {
-      console.error('Error al obtener la captura de pantalla:', error);
+      alert('Error al obtener la captura de pantalla:', error);
     }
+  };
+
+  const startRecording = (media) => {
+    const mediarecorder = new MediaRecorder(media, {
+      mimeType: 'video/webm;codecs=h264,opus',
+      bitsPerSecond: 5000000,
+    });
+
+    mediarecorder.start(); // inicia la grabación
+    mediaRecorderRef.current = mediarecorder; // para usar a fuera de la función
+
+    // cuando se finaliza el compartir pantalla se detiene la grabación
+    const [video] = media.getVideoTracks();
+    video.addEventListener('ended', () => {
+      stopRecording();
+    });
+
+    // al finalizar guarda la grabación
+    mediarecorder.addEventListener('dataavailable', (e) => {
+      const link = document.createElement('a');
+      const blob = new Blob([e.data], { type: 'video/webm' });
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+    });
   };
 
   const stopRecording = () => {
@@ -71,13 +88,13 @@ function App() {
           onChange={(e) => setFileName(e.target.value)}
           placeholder="Nombre del archivo"
           className={isRecording ? 'invalid' : ''}
-          disabled={isRecording ? true: false}
+          disabled={isRecording ? true : false}
         />
-      <input type='checkbox' placeholder='permitir grabar micrófono'/>
         <button className='button' onClick={isRecording ? stopRecording : handleRecording}>
           {isRecording ? '⏹️ Stop Recording' : '⏺️ Start Recording'}
         </button>
-        <video className="video" ref={videoRef} autoPlay muted style={{display:isRecording?'':'none'}}/>
+        <div className="countdown" style={{display:isRecording? '':'none'}}>{countdown > 0 && `Starting in ${countdown} seconds...`}</div>
+        <video className="video" ref={videoRef} autoPlay muted style={{ display: isRecording ? '' : 'none' }} />
       </div>
     </>
   );
