@@ -8,6 +8,7 @@ import VideoPlayer from "./components/videoPlayer/VideoPlayer";
 function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [isRecordingCountDown, setIsRecordingCountDown] = useState(false);
+  const [isCounting, setIsCounting] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const videoRef = useRef();
   const mediaRecorderRef = useRef(null);
@@ -29,6 +30,7 @@ function App() {
 
       setIsRecordingCountDown(true);
 
+      setIsCounting(true);
       // Retraso de 3 segundos antes de iniciar la grabación
       setCountdown(3);
       const countdownInterval = setInterval(() => {
@@ -37,6 +39,7 @@ function App() {
 
       setTimeout(() => {
         clearInterval(countdownInterval); // funcion js que limpia el temporizador
+        setIsCounting(false);
         startRecording(media);
       }, 3000); // 3 segundos de retraso
     } catch (error) {
@@ -76,7 +79,7 @@ function App() {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setIsRecordingCountDown(false);
-      
+      setIsCounting(false);
       const stream = videoRef.current.srcObject;
       const tracks = stream.getTracks();
 
@@ -102,6 +105,7 @@ function App() {
           isRecording={isRecording}
           stopRecording={stopRecording}
           handleRecording={handleRecording}
+          isCounting={isCounting}
         />
 
         <Countdown
